@@ -1,29 +1,36 @@
 var express = require("express");
-var jwt = require('express-jwt');
+const jwt = require("express-jwt");
 const {
   requestAll,
   requestOne,
   create,
   deleteGoal,
   updateGoal,
+  createGoal,
 } = require("../db/request");
 var router = express.Router();
 const { body, validationResult } = require("express-validator");
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {
-  requestAll("goalsorder", req.auth.id, (err, goals) => {
+id = req.auth.id 
+  requestAll("goalsorder", id, (err, goals) => {
     if (err) {
+      if (err.name === "UnauthorizedError: jwt expired") {
+        res.status(401).json({ error: "JWT expired" });
+      } else {
+        // Handle other types of errors
+        res.status(500).json({ error: "Internal server error" });
+      }
       return next(err);
     }
-    console.log(goals);
     res.send(goals);
   });
 });
 
 router.get("/:id", function (req, res, next) {
   const id = req.params.id;
-  requestOne("goalsorder", id, (err, goal) => {
+  requestOne("goalsorder", id, req.auth.id, (err, goal) => {
     if (err) {
       return next(err);
     }
@@ -54,7 +61,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
     const newGoal = req.body;
-    create("goalsorder", newGoal, (err, goal) => {
+    createGoal("goalsorder", newGoal, req.auth.id, (err, goal) => {
       if (err) {
         return next(err);
       }
@@ -88,14 +95,14 @@ router.put(
     if (body.id !== +id) {
       return res.sendStatus(409);
     }
-    requestOne("goalsorder", id, (err, goal) => {
+    requestOne("goalsorder", id, req.auth.id, (err, goal) => {
       if (err) {
         return next(err);
       }
       if (!goal.length) {
         return res.sendStatus(404);
       }
-      updateGoal("goalsorder", id, body, (err, body) => {
+      updateGoal("goalsorder", id, body, req.auth.id, (err, body) => {
         if (err) {
           return next(err);
         }
@@ -108,7 +115,7 @@ router.put(
 router.delete("/:id", function (req, res, next) {
   const id = req.params.id;
 
-  requestOne("goalsorder", id, (err, goal) => {
+  requestOne("goalsorder", id, req.auth.id, (err, goal) => {
     if (err) {
       return next(err);
     }
@@ -116,7 +123,7 @@ router.delete("/:id", function (req, res, next) {
       return res.sendStatus(404);
     }
 
-    deleteGoal("goalsorder", id, (err, goal) => {
+    deleteGoal("goalsorder", id, req.auth.id, (err, goal) => {
       if (err) {
         return next(err);
       }
