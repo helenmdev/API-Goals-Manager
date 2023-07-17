@@ -21,7 +21,7 @@
     "morgan": "~1.9.1",
     "nodemailer": "^6.9.1",
     "pg": "^8.10.0",
-    "pg-promise": "^11.3.0",
+    "pg-promise": "^11.5.0",
     "set-tz": "^0.2.0"
   },
   "devDependencies": {
