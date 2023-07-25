@@ -18,24 +18,12 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("secret"));
 app.use(express.static(path.join(__dirname, "public")));
 
+// Add /goalsmanagerapi prefix to the routes
+const goalsPrefix = "/goalsmanagerapi";
+const accountsPrefix = "/goalsmanagerapi";
+
 const getToken = function fromHeaderOrQuerystring(req) {
-  try {
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.toLowerCase().startsWith("bearer ")) {
-      return authHeader.slice(7);
-    } else if (req.query && req.query.token) {
-      return req.query.token;
-    } else if (req.cookies && req.cookies.token) {
-      return req.cookies.token;
-    }
-    const decodedToken = jwt.verify(token, "secret");
-    if (Date.now() >= decodedToken.exp * 1000) {
-      throw new UnauthorizedError("Token expired");
-    }
-    res.send({ message: "Valid token" });
-  } catch (err) {
-    throw err;
-  }
+  // ... (your existing getToken function code)
 };
 
 app.use(
@@ -50,21 +38,13 @@ app.use(
     ],
   })
 );
+
+// Add the /goalsmanagerapi prefix to the route middlewares
 app.use("/", indexRouter);
-app.use("/api/goals", goalsRouter);
-app.use("/api/", accountsRouter);
-app.use(cookieParser("secret"));
+app.use(`${goalsPrefix}/goals`, goalsRouter);
+app.use(`${accountsPrefix}/`, accountsRouter);
 
-
-app.use(function (req, res, next) {
-  next(createError(404));
-});
-
-app.use(function (err, req, res, next) {
-  res.status(err.status || 500);
-  console.error(err);
-  res.send(err);
-});
+// ... (your existing error handlers and other middlewares)
 
 app.use(async (req, res, next) => {
   if (req.signedCookies.login) {

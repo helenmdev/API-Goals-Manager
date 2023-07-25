@@ -37,7 +37,7 @@ const singupValidationMiddleware = [
 ];
 
 router.post(
-  "/login",
+  `${accountsPrefix}/login`,
   loginValidationMiddleware,
   async function (req, res, next) {
     const validationErrors = validationResult(req);
@@ -86,7 +86,7 @@ async function authenticateUser(username, password) {
 }
 
 router.post(
-  "/signup",
+  `${accountsPrefix}/signup`,
   singupValidationMiddleware,
   async function (req, res, next) {
     const validationErrors = validationResult(req);
@@ -132,7 +132,7 @@ function createToken(email, accountid) {
   return token;
 }
 
-router.post("/forgot_password", async (req, res, next) => {
+router.post(`${accountsPrefix}/forgot_password`, async (req, res, next) => {
   const { email } = req.body;
 
   if (!email) {
@@ -173,7 +173,7 @@ router.post("/forgot_password", async (req, res, next) => {
   res.send({ message: "Password reset email sent" });
 });
 
-router.delete("/delete_account/:id", async (req, res, next) => {
+router.delete(`${accountsPrefix}/delete_account/:id`, async (req, res, next) => {
   const id = req.params.id;
   deleteAccount(id, (err, res) => {
     if (err) {
@@ -183,7 +183,7 @@ router.delete("/delete_account/:id", async (req, res, next) => {
   res.send({ message: "Account deleted successfully" });
 });
 
-router.post("/reset_password", async (req, res, next) => {
+router.post(`${accountsPrefix}/reset_password`, async (req, res, next) => {
   const { newPassword, token } = req.body;
 
   checkTokenResult(token, (err, tokenResult) => {
@@ -221,7 +221,7 @@ router.post("/reset_password", async (req, res, next) => {
   });
 });
 
-router.post("/resetuserpassword", async (req, res, next) => {
+router.post(`${accountsPrefix}/resetuserpassword`, async (req, res, next) => {
   const { newPassword, accountId } = req.body;
   const hashedPassword = bcrypt.hashSync(newPassword, 12);
 
