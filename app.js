@@ -41,8 +41,8 @@ app.use(
 
 // Add the /goalsmanagerapi prefix to the route middlewares
 app.use("/", indexRouter);
-app.use(`${goalsPrefix}/goals`, goalsRouter);
-app.use(`${accountsPrefix}/`, accountsRouter);
+app.use("goalsmanagerapi/goals", goalsRouter);
+app.use("goalsmanagerapi/", accountsRouter);
 
 // ... (your existing error handlers and other middlewares)
 
@@ -59,4 +59,6 @@ app.use(async (req, res, next) => {
   next();
 });
 
-module.exports = app;
+module.exports =  app;
+
+

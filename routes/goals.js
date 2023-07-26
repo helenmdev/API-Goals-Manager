@@ -12,7 +12,7 @@ var router = express.Router();
 const { body, validationResult } = require("express-validator");
 
 /* GET users listing. */
-router.get(`${goalsPrefix}/`, function (req, res, next) {
+router.get("/", function (req, res, next) {
 id = req.auth.id 
   requestAll("goalsorder", id, (err, goals) => {
     if (err) {
@@ -28,7 +28,7 @@ id = req.auth.id
   });
 });
 
-router.get(`${goalsPrefix}/:id`, function (req, res, next) {
+router.get("/:id", function (req, res, next) {
   const id = req.params.id;
   requestOne("goalsorder", id, req.auth.id, (err, goal) => {
     if (err) {
@@ -42,7 +42,7 @@ router.get(`${goalsPrefix}/:id`, function (req, res, next) {
 });
 
 router.post(
-  `${goalsPrefix}/`,
+  "/",
   body("details").not().isEmpty(),
   body("events").not().isEmpty().isInt(),
   body("frequency")
@@ -71,7 +71,7 @@ router.post(
 );
 
 router.put(
-  `${goalsPrefix}/:id`,
+  "/:id",
   body("details").not().isEmpty(),
   body("events").not().isEmpty().isInt(),
   body("frequency")
@@ -112,7 +112,7 @@ router.put(
   }
 );
 
-router.delete(`${goalsPrefix}/:id`, function (req, res, next) {
+router.delete("/:id", function (req, res, next) {
   const id = req.params.id;
 
   requestOne("goalsorder", id, req.auth.id, (err, goal) => {
