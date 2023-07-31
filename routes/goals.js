@@ -14,7 +14,7 @@ const { body, validationResult } = require("express-validator");
 /* GET users listing. */
 router.get("/", function (req, res, next) {
 id = req.auth.id 
-  requestAll("goalsorder", id, (err, goals) => {
+  requestAll("/goals/goalsorder", id, (err, goals) => {
     if (err) {
       if (err.name === "UnauthorizedError: jwt expired") {
         res.status(401).json({ error: "JWT expired" });
@@ -28,7 +28,7 @@ id = req.auth.id
   });
 });
 
-router.get("/:id", function (req, res, next) {
+router.get("/goals/:id", function (req, res, next) {
   const id = req.params.id;
   requestOne("goalsorder", id, req.auth.id, (err, goal) => {
     if (err) {
@@ -61,7 +61,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
     const newGoal = req.body;
-    createGoal("goalsorder", newGoal, req.auth.id, (err, goal) => {
+    createGoal("/goals/goalsorder", newGoal, req.auth.id, (err, goal) => {
       if (err) {
         return next(err);
       }
@@ -71,7 +71,7 @@ router.post(
 );
 
 router.put(
-  "/:id",
+  "/goals/:id",
   body("details").not().isEmpty(),
   body("events").not().isEmpty().isInt(),
   body("frequency")
@@ -95,14 +95,14 @@ router.put(
     if (body.id !== +id) {
       return res.sendStatus(409);
     }
-    requestOne("goalsorder", id, req.auth.id, (err, goal) => {
+    requestOne("goals/goalsorder", id, req.auth.id, (err, goal) => {
       if (err) {
         return next(err);
       }
       if (!goal.length) {
         return res.sendStatus(404);
       }
-      updateGoal("goalsorder", id, body, req.auth.id, (err, body) => {
+      updateGoal("/goals/goalsorder", id, body, req.auth.id, (err, body) => {
         if (err) {
           return next(err);
         }
@@ -112,7 +112,7 @@ router.put(
   }
 );
 
-router.delete("/:id", function (req, res, next) {
+router.delete("/goals/:id", function (req, res, next) {
   const id = req.params.id;
 
   requestOne("goalsorder", id, req.auth.id, (err, goal) => {

@@ -4,11 +4,12 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const { expressjwt: jwt, UnauthorizedError } = require("express-jwt");
-
+const { createProxyMiddleware } = require('http-proxy-middleware')
 const indexRouter = require("./routes/index");
 const goalsRouter = require("./routes/goals");
 const accountsRouter = require("./routes/accounts");
 const { authenticateUser } = require("./routes/accounts");
+const cors = require('cors');
 
 const app = express();
 
@@ -17,6 +18,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("secret"));
 app.use(express.static(path.join(__dirname, "public")));
+
+const corsOptions = {
+  origin: 'https://helenmadev.tech/',
+};
+
+app.use(cors(corsOptions));
 
 // Add /goalsmanagerapi prefix to the routes
 const goalsPrefix = "/goalsmanagerapi";
@@ -27,22 +34,22 @@ const getToken = function fromHeaderOrQuerystring(req) {
 };
 
 app.use(
-  "/api",
+  "/goalsmanagerapi",
   jwt({ secret: "secret", algorithms: ["HS256"], getToken }).unless({
     path: [
-      "/api/signup",
-      "/api/login",
-      "/api/forgot_password",
-      "/api/reset_password",
-      "api/verify",
+      "/goalsmanagerapi/signup",
+      "/goalsmanagerapi/login",
+      "/goalsmanagerapi/forgot_password",
+      "/goalsmanagerapi/reset_password",
+      "/goalsmanagerapi/verify",
     ],
   })
 );
 
 // Add the /goalsmanagerapi prefix to the route middlewares
 app.use("/", indexRouter);
-app.use("goalsmanagerapi/goals", goalsRouter);
-app.use("goalsmanagerapi/", accountsRouter);
+app.use("/goalsmanagerapi/goals", goalsRouter);
+app.use("/goalsmanagerapi/", accountsRouter);
 
 // ... (your existing error handlers and other middlewares)
 
