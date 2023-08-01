@@ -24,6 +24,9 @@ router.get("/", function (req, res, next) {
       }
       return next(err);
     }
+    res.header("Access-Control-Allow-Origin", "https://goalsmanager.helenmadev.tech");
+    res.header("Access-Control-Allow-Methods", "GET");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
     res.send(goals);
   });
 });
