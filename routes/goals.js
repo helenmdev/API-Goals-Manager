@@ -14,7 +14,7 @@ const { body, validationResult } = require("express-validator");
 /* GET users listing. */
 router.get("/", function (req, res, next) {
   id = req.auth.id;
-  requestAll("/goals/goalsorder", id, (err, goals) => {
+  requestAll("/goalsorder", id, (err, goals) => {
     if (err) {
       if (err.name === "UnauthorizedError: jwt expired") {
         res.status(401).json({ error: "JWT expired" });
@@ -67,7 +67,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
     const newGoal = req.body;
-    createGoal("/goals/goalsorder", newGoal, req.auth.id, (err, goal) => {
+    createGoal("/goalsorder", newGoal, req.auth.id, (err, goal) => {
       if (err) {
         return next(err);
       }
@@ -107,14 +107,14 @@ router.put(
     if (body.id !== +id) {
       return res.sendStatus(409);
     }
-    requestOne("goals/goalsorder", id, req.auth.id, (err, goal) => {
+    requestOne("/goalsorder", id, req.auth.id, (err, goal) => {
       if (err) {
         return next(err);
       }
       if (!goal.length) {
         return res.sendStatus(404);
       }
-      updateGoal("/goals/goalsorder", id, body, req.auth.id, (err, body) => {
+      updateGoal("/goalsorder", id, body, req.auth.id, (err, body) => {
         if (err) {
           return next(err);
         }
