@@ -49,6 +49,12 @@ router.post(
     const { username, password } = req.body;
     try {
       const token = await authenticateUser(username, password);
+      res.header(
+        "Access-Control-Allow-Origin",
+        "https://goalsmanager.helenmadev.tech"
+      );
+      res.header("Access-Control-Allow-Methods", "POST");
+      res.header("Access-Control-Allow-Headers", "Content-Type");
       res.json({ token });
     } catch (err) {
       if (err.message === "Account not found") {
@@ -92,6 +98,12 @@ router.post(
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) {
       const errorMessages = validationErrors.array().map((error) => error.msg);
+      res.header(
+        "Access-Control-Allow-Origin",
+        "https://goalsmanager.helenmadev.tech"
+      );
+      res.header("Access-Control-Allow-Methods", "POST");
+      res.header("Access-Control-Allow-Headers", "Content-Type");
       res.status(400).json({
         success: false,
         message: errorMessages,
@@ -136,6 +148,12 @@ router.post("/forgot_password", async (req, res, next) => {
   const { email } = req.body;
 
   if (!email) {
+    res.header(
+      "Access-Control-Allow-Origin",
+      "https://goalsmanager.helenmadev.tech"
+    );
+    res.header("Access-Control-Allow-Methods", "POST");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
     return res.status(404).send({ error: "No user found with that email" });
   }
 
@@ -169,7 +187,12 @@ router.post("/forgot_password", async (req, res, next) => {
     }
     console.log("Email sent: " + info.response);
   });
-
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://goalsmanager.helenmadev.tech"
+  );
+  res.header("Access-Control-Allow-Methods", "POST");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
   res.send({ message: "Password reset email sent" });
 });
 
@@ -180,6 +203,12 @@ router.delete("/delete_account/:id", async (req, res, next) => {
       return next(err);
     }
   });
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://goalsmanager.helenmadev.tech"
+  );
+  res.header("Access-Control-Allow-Methods", "DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
   res.send({ message: "Account deleted successfully" });
 });
 
@@ -214,6 +243,12 @@ router.post("/reset_password", async (req, res, next) => {
           if (err) {
             return next(err);
           }
+          res.header(
+            "Access-Control-Allow-Origin",
+            "https://goalsmanager.helenmadev.tech"
+          );
+          res.header("Access-Control-Allow-Methods", "POST");
+          res.header("Access-Control-Allow-Headers", "Content-Type");
           res.send({ message: "Password reset successfully" });
         });
       });
@@ -229,6 +264,12 @@ router.post("/resetuserpassword", async (req, res, next) => {
     if (err) {
       return next(err);
     }
+    res.header(
+      "Access-Control-Allow-Origin",
+      "https://goalsmanager.helenmadev.tech"
+    );
+    res.header("Access-Control-Allow-Methods", "POST");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
     res.send({ message: "Password successfully changed" });
   });
 });

@@ -13,7 +13,7 @@ const { body, validationResult } = require("express-validator");
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {
-id = req.auth.id 
+  id = req.auth.id;
   requestAll("/goals/goalsorder", id, (err, goals) => {
     if (err) {
       if (err.name === "UnauthorizedError: jwt expired") {
@@ -37,6 +37,12 @@ router.get("/:id", function (req, res, next) {
     if (!goal.length) {
       return res.sendStatus(404);
     }
+    res.header(
+      "Access-Control-Allow-Origin",
+      "https://goalsmanager.helenmadev.tech"
+    );
+    res.header("Access-Control-Allow-Methods", "GET");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
     res.send(goal[0]);
   });
 });
@@ -65,6 +71,12 @@ router.post(
       if (err) {
         return next(err);
       }
+      res.header(
+        "Access-Control-Allow-Origin",
+        "https://goalsmanager.helenmadev.tech"
+      );
+      res.header("Access-Control-Allow-Methods", "POST");
+      res.header("Access-Control-Allow-Headers", "Content-Type");
       res.send(goal);
     });
   }
@@ -106,6 +118,12 @@ router.put(
         if (err) {
           return next(err);
         }
+        res.header(
+          "Access-Control-Allow-Origin",
+          "https://goalsmanager.helenmadev.tech"
+        );
+        res.header("Access-Control-Allow-Methods", "PUT");
+        res.header("Access-Control-Allow-Headers", "Content-Type");
         res.send(body);
       });
     });
@@ -127,6 +145,12 @@ router.delete("/:id", function (req, res, next) {
       if (err) {
         return next(err);
       }
+      res.header(
+        "Access-Control-Allow-Origin",
+        "https://goalsmanager.helenmadev.tech"
+      );
+      res.header("Access-Control-Allow-Methods", "DELETE");
+      res.header("Access-Control-Allow-Headers", "Content-Type");
       res.sendStatus(204);
     });
   });
