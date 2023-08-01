@@ -28,7 +28,7 @@ id = req.auth.id
   });
 });
 
-router.get("/goals/:id", function (req, res, next) {
+router.get("/:id", function (req, res, next) {
   const id = req.params.id;
   requestOne("goalsorder", id, req.auth.id, (err, goal) => {
     if (err) {
@@ -71,7 +71,7 @@ router.post(
 );
 
 router.put(
-  "/goals/:id",
+  "/:id",
   body("details").not().isEmpty(),
   body("events").not().isEmpty().isInt(),
   body("frequency")
@@ -112,7 +112,7 @@ router.put(
   }
 );
 
-router.delete("/goals/:id", function (req, res, next) {
+router.delete("/:id", function (req, res, next) {
   const id = req.params.id;
 
   requestOne("goalsorder", id, req.auth.id, (err, goal) => {

@@ -9,7 +9,7 @@ const indexRouter = require("./routes/index");
 const goalsRouter = require("./routes/goals");
 const accountsRouter = require("./routes/accounts");
 const { authenticateUser } = require("./routes/accounts");
-const cors = require('cors');
+const cors = require("cors");
 
 const app = express();
 
@@ -25,9 +25,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Add /goalsmanagerapi prefix to the routes
-const goalsPrefix = "/goalsmanagerapi";
-const accountsPrefix = "/goalsmanagerapi";
 
 const getToken = function fromHeaderOrQuerystring(req) {
   // ... (your existing getToken function code)
@@ -37,6 +34,7 @@ app.use(
   "/goalsmanagerapi",
   jwt({ secret: "secret", algorithms: ["HS256"], getToken }).unless({
     path: [
+      "/goalsmanagerapi",
       "/goalsmanagerapi/signup",
       "/goalsmanagerapi/login",
       "/goalsmanagerapi/forgot_password",
