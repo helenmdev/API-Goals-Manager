@@ -49,12 +49,6 @@ router.post(
     const { username, password } = req.body;
     try {
       const token = await authenticateUser(username, password);
-      res.header(
-        "Access-Control-Allow-Origin",
-        "https://goalsmanager.helenmadev.tech"
-      );
-      res.header("Access-Control-Allow-Methods", "POST");
-      res.header("Access-Control-Allow-Headers", "Content-Type");
       res.json({ token });
     } catch (err) {
       if (err.message === "Account not found") {
@@ -98,12 +92,7 @@ router.post(
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) {
       const errorMessages = validationErrors.array().map((error) => error.msg);
-      res.header(
-        "Access-Control-Allow-Origin",
-        "https://goalsmanager.helenmadev.tech"
-      );
-      res.header("Access-Control-Allow-Methods", "POST");
-      res.header("Access-Control-Allow-Headers", "Content-Type");
+
       res.status(400).json({
         success: false,
         message: errorMessages,
@@ -146,19 +135,13 @@ function createToken(email, accountid) {
 
 router.post("/forgot_password", async (req, res, next) => {
   const { email } = req.body;
-
   if (!email) {
-    res.header(
-      "Access-Control-Allow-Origin",
-      "https://goalsmanager.helenmadev.tech"
-    );
-    res.header("Access-Control-Allow-Methods", "POST");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
     return res.status(404).send({ error: "No user found with that email" });
   }
-
   const token = createToken(email);
-  const expiresAt = moment().add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
+  console.log(token)
+  const expiresAt = new Date(moment().add(5, "hour")).toISOString();
+  console.log(expiresAt)
 
   forgotPassword(email, token, expiresAt, (err) => {
     if (err) {
@@ -185,16 +168,13 @@ router.post("/forgot_password", async (req, res, next) => {
     if (error) {
       return console.log("transporter", error);
     }
-    console.log("Email sent: " + info.response);
+    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.header("Access-Control-Allow-Methods", "POST");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(200).send("Email sent successfully");
   });
-  res.header(
-    "Access-Control-Allow-Origin",
-    "https://goalsmanager.helenmadev.tech"
-  );
-  res.header("Access-Control-Allow-Methods", "POST");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  res.send({ message: "Password reset email sent" });
 });
+
 
 router.delete("/delete_account/:id", async (req, res, next) => {
   const id = req.params.id;
@@ -203,73 +183,45 @@ router.delete("/delete_account/:id", async (req, res, next) => {
       return next(err);
     }
   });
-  res.header(
-    "Access-Control-Allow-Origin",
-    "https://goalsmanager.helenmadev.tech"
-  );
-  res.header("Access-Control-Allow-Methods", "DELETE");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
+
   res.send({ message: "Account deleted successfully" });
 });
 
 router.post("/reset_password", async (req, res, next) => {
-  const { newPassword, token } = req.body;
+  try {
+    const { newPassword, token } = req.body;
 
-  checkTokenResult(token, (err, tokenResult) => {
-    if (err) {
-      return next(err);
-    }
+    const tokenResult = await checkTokenResult(token);
     if (!tokenResult.id) {
       return res.status(400).send({ error: "User not found" });
     }
 
     const hashedPassword = bcrypt.hashSync(newPassword, 12);
 
-    checkUserResult(tokenResult.id, (err, userResult) => {
-      if (err) {
-        return next(err);
-      }
+    
+    await updatePassword(hashedPassword, tokenResult.id);
+    await deleteResetToken(tokenResult.id);
 
-      if (!userResult) {
-        return res.status(400).send({ error: "User not found" });
-      }
+    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.header("Access-Control-Allow-Methods", "POST");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
 
-      updatePassword(hashedPassword, tokenResult.id, (err, updatePassword) => {
-        if (err) {
-          return next(err);
-        }
-
-        deleteResetToken(tokenResult.id, function (err) {
-          if (err) {
-            return next(err);
-          }
-          res.header(
-            "Access-Control-Allow-Origin",
-            "https://goalsmanager.helenmadev.tech"
-          );
-          res.header("Access-Control-Allow-Methods", "POST");
-          res.header("Access-Control-Allow-Headers", "Content-Type");
-          res.send({ message: "Password reset successfully" });
-        });
-      });
-    });
-  });
+    res.send({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("An error occurred:", error);
+    next(error);
+  }
 });
-
 router.post("/resetuserpassword", async (req, res, next) => {
-  const { newPassword, accountId } = req.body;
+  const { newPassword, id } = req.body;
+  console.log(req.body);
   const hashedPassword = bcrypt.hashSync(newPassword, 12);
 
-  ResetUserPassword(hashedPassword, accountId, function (err) {
+  ResetUserPassword(hashedPassword, id, function (err) {
     if (err) {
       return next(err);
     }
-    res.header(
-      "Access-Control-Allow-Origin",
-      "https://goalsmanager.helenmadev.tech"
-    );
-    res.header("Access-Control-Allow-Methods", "POST");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
+
     res.send({ message: "Password successfully changed" });
   });
 });

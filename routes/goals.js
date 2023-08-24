@@ -13,26 +13,32 @@ const { body, validationResult } = require("express-validator");
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {
-  id = req.auth.id;
-  requestAll("/goalsorder", id, (err, goals) => {
-    if (err) {
-      if (err.name === "UnauthorizedError: jwt expired") {
-        res.status(401).json({ error: "JWT expired" });
-      } else {
-        // Handle other types of errors
-        res.status(500).json({ error: "Internal server error" });
+  try {
+    const account_id = req.headers["user-id"];
+
+    requestAll("goalsorder", account_id, (err, goals) => {
+      if (err) {
+        if (err.name === "UnauthorizedError: jwt expired") {
+          res.status(401).json({ error: "JWT expired" });
+        } else {
+          res.status(500).json({ error: "Internal server error}", err });
+        }
+        return next(err);
       }
-      return next(err);
-    }
-    res.header("Access-Control-Allow-Origin", "https://goalsmanager.helenmadev.tech");
-    res.header("Access-Control-Allow-Methods", "GET");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
-    res.send(goals);
-  });
+      res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+      res.header("Access-Control-Allow-Methods", "GET");
+      res.header("Access-Control-Allow-Headers", "Content-Type");
+      res.send(goals);
+    });
+  } catch (error) {
+    // Handle any unexpected errors
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 router.get("/:id", function (req, res, next) {
-  const id = req.params.id;
+  const account_id = req.headers["user-id"];
   requestOne("goalsorder", id, req.auth.id, (err, goal) => {
     if (err) {
       return next(err);
@@ -40,10 +46,7 @@ router.get("/:id", function (req, res, next) {
     if (!goal.length) {
       return res.sendStatus(404);
     }
-    res.header(
-      "Access-Control-Allow-Origin",
-      "https://goalsmanager.helenmadev.tech"
-    );
+    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
     res.header("Access-Control-Allow-Methods", "GET");
     res.header("Access-Control-Allow-Headers", "Content-Type");
     res.send(goal[0]);
@@ -70,14 +73,13 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
     const newGoal = req.body;
-    createGoal("/goalsorder", newGoal, req.auth.id, (err, goal) => {
+    console.log(newGoal);
+    const account_id = req.headers["user-id"];
+    createGoal("goalsorder", newGoal, account_id, (err, goal) => {
       if (err) {
         return next(err);
       }
-      res.header(
-        "Access-Control-Allow-Origin",
-        "https://goalsmanager.helenmadev.tech"
-      );
+      res.header("Access-Control-Allow-Origin", "http://localhost:3001");
       res.header("Access-Control-Allow-Methods", "POST");
       res.header("Access-Control-Allow-Headers", "Content-Type");
       res.send(goal);
@@ -106,28 +108,28 @@ router.put(
     }
     const body = req.body;
     const id = req.params.id;
+    const account_id = req.body.account_id;
 
     if (body.id !== +id) {
       return res.sendStatus(409);
     }
-    requestOne("/goalsorder", id, req.auth.id, (err, goal) => {
+    requestOne("goalsorder", id, account_id, (err, goal) => {
       if (err) {
+        console.log(err);
         return next(err);
       }
       if (!goal.length) {
         return res.sendStatus(404);
       }
-      updateGoal("/goalsorder", id, body, req.auth.id, (err, body) => {
+      updateGoal("goalsorder", id, body, account_id, (err, goal) => {
         if (err) {
+          console.log("update", err);
           return next(err);
         }
-        res.header(
-          "Access-Control-Allow-Origin",
-          "https://goalsmanager.helenmadev.tech"
-        );
+        res.header("Access-Control-Allow-Origin", "http://localhost:3001");
         res.header("Access-Control-Allow-Methods", "PUT");
         res.header("Access-Control-Allow-Headers", "Content-Type");
-        res.send(body);
+        res.send(goal);
       });
     });
   }
@@ -135,8 +137,8 @@ router.put(
 
 router.delete("/:id", function (req, res, next) {
   const id = req.params.id;
-
-  requestOne("goalsorder", id, req.auth.id, (err, goal) => {
+  const account_id = req.headers["user-id"];
+  requestOne("goalsorder", id, account_id, (err, goal) => {
     if (err) {
       return next(err);
     }
@@ -144,14 +146,11 @@ router.delete("/:id", function (req, res, next) {
       return res.sendStatus(404);
     }
 
-    deleteGoal("goalsorder", id, req.auth.id, (err, goal) => {
+    deleteGoal("goalsorder", id, account_id, (err) => {
       if (err) {
         return next(err);
       }
-      res.header(
-        "Access-Control-Allow-Origin",
-        "https://goalsmanager.helenmadev.tech"
-      );
+      res.header("Access-Control-Allow-Origin", "http://localhost:3001");
       res.header("Access-Control-Allow-Methods", "DELETE");
       res.header("Access-Control-Allow-Headers", "Content-Type");
       res.sendStatus(204);

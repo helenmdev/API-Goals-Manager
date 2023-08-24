@@ -13,50 +13,40 @@ const cors = require("cors");
 
 const app = express();
 
+app.use(cors());
+
+// Other middlewares and routes should come after the CORS middleware
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("secret"));
 app.use(express.static(path.join(__dirname, "public")));
 
-const corsOptions = {
-  origin: 'https://helenmadev.tech/',
-};
-
-app.use(cors(corsOptions));
-
-
-const getToken = function fromHeaderOrQuerystring(req) {
-  // ... (your existing getToken function code)
-};
-
+// Exclude /login from JWT authentication
 app.use(
-  "/goalsmanagerapi",
-  jwt({ secret: "secret", algorithms: ["HS256"], getToken }).unless({
+  "/api",
+  jwt({ secret: "secret", algorithms: ["HS256"] }).unless({
     path: [
-      "/goalsmanagerapi",
-      "/goalsmanagerapi/signup",
-      "/goalsmanagerapi/login",
-      "/goalsmanagerapi/forgot_password",
-      "/goalsmanagerapi/reset_password",
-      "/goalsmanagerapi/verify",
+      "/",
+      "/login",              // Exclude /login from JWT authentication
+      "/forgot_password",
+      "/reset_password",
+      "/verify",
     ],
   })
 );
 
-// Add the /goalsmanagerapi prefix to the route middlewares
+// Your other routes
 app.use("/", indexRouter);
-app.use("/goalsmanagerapi/goals", goalsRouter);
-app.use("/goalsmanagerapi/", accountsRouter);
-
-// ... (your existing error handlers and other middlewares)
+app.use("/goals", goalsRouter);
+app.use("/", accountsRouter);
 
 app.use(async (req, res, next) => {
   if (req.signedCookies.login) {
     const { username, password } = req.signedCookies.login;
     try {
       const account = await authenticateUser(username, password);
-      req.user = account; // set authenticated user on the req object
+      req.user = account;
     } catch (err) {
       console.error(err);
     }
@@ -64,6 +54,4 @@ app.use(async (req, res, next) => {
   next();
 });
 
-module.exports =  app;
-
-
+module.exports = app;
