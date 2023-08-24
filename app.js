@@ -15,20 +15,25 @@ const app = express();
 
 app.use(cors());
 
-// Other middlewares and routes should come after the CORS middleware
+const corsOptions = {
+  origin: ['htt://localhost:3001', 'https://goalsmanager.helenmadev.tech'],
+  methods: 'GET,POST,PUT,DELETE',
+  allowedHeaders: 'Content-Type,Authorization',
+};
+
+app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("secret"));
 app.use(express.static(path.join(__dirname, "public")));
 
-// Exclude /login from JWT authentication
 app.use(
   "/api",
   jwt({ secret: "secret", algorithms: ["HS256"] }).unless({
     path: [
       "/",
-      "/login",              // Exclude /login from JWT authentication
+      "/login",              
       "/forgot_password",
       "/reset_password",
       "/verify",
@@ -36,7 +41,7 @@ app.use(
   })
 );
 
-// Your other routes
+
 app.use("/", indexRouter);
 app.use("/goals", goalsRouter);
 app.use("/", accountsRouter);

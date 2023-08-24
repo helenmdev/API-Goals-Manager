@@ -19,6 +19,16 @@ const cookieParser = require("cookie-parser");
 const nodemailer = require("nodemailer");
 const moment = require("moment");
 const { pool } = require("pg");
+const cors = require('cors');
+
+router.use(cors());
+
+const allowedOrigins = [
+  "http://localhost:3001",
+  "https://goalsmanager.helenmadev.tech",
+];
+
+
 
 const loginValidationMiddleware = [
   body("username").notEmpty().isEmail(),
@@ -161,14 +171,17 @@ router.post("/forgot_password", async (req, res, next) => {
     from: "Goals Manager",
     to: email,
     subject: "Goals Manager. Reset your password",
-    html: `<p>Click <a href="http://localhost:3001/resetpassword/${token}">here</a> to reset your password.</p>`,
+    html: `<p>Click <a href="https://goalsmanager.helenmadev.tech/resetpassword/${token}">here</a> to reset your password.</p>`,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
+    const origin = req.headers.origin;
     if (error) {
       return console.log("transporter", error);
     }
-    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+    if (allowedOrigins.includes(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
+    }
     res.header("Access-Control-Allow-Methods", "POST");
     res.header("Access-Control-Allow-Headers", "Content-Type");
     return res.status(200).send("Email sent successfully");
@@ -201,8 +214,10 @@ router.post("/reset_password", async (req, res, next) => {
     
     await updatePassword(hashedPassword, tokenResult.id);
     await deleteResetToken(tokenResult.id);
-
-    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
+    }
     res.header("Access-Control-Allow-Methods", "POST");
     res.header("Access-Control-Allow-Headers", "Content-Type");
 
