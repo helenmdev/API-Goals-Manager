@@ -67,6 +67,7 @@ router.post(
         next(err);
       }
     }
+    const origin = req.headers.origin;
     if (allowedOrigins.includes(origin)) {
       res.header("Access-Control-Allow-Origin", origin);
     }
@@ -131,6 +132,7 @@ router.post(
         );
       });
     }
+    const origin = req.headers.origin;
     if (allowedOrigins.includes(origin)) {
       res.header("Access-Control-Allow-Origin", origin);
     }
