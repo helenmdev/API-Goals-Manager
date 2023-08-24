@@ -19,7 +19,7 @@ const cookieParser = require("cookie-parser");
 const nodemailer = require("nodemailer");
 const moment = require("moment");
 const { pool } = require("pg");
-const cors = require('cors');
+const cors = require("cors");
 
 router.use(cors());
 
@@ -27,8 +27,6 @@ const allowedOrigins = [
   "http://localhost:3001",
   "https://goalsmanager.helenmadev.tech",
 ];
-
-
 
 const loginValidationMiddleware = [
   body("username").notEmpty().isEmail(),
@@ -69,6 +67,11 @@ router.post(
         next(err);
       }
     }
+    if (allowedOrigins.includes(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
+    }
+    res.header("Access-Control-Allow-Methods", "POST");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
   }
 );
 
@@ -128,6 +131,11 @@ router.post(
         );
       });
     }
+    if (allowedOrigins.includes(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
+    }
+    res.header("Access-Control-Allow-Methods", "POST");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
   }
 );
 
@@ -149,9 +157,9 @@ router.post("/forgot_password", async (req, res, next) => {
     return res.status(404).send({ error: "No user found with that email" });
   }
   const token = createToken(email);
-  console.log(token)
+  console.log(token);
   const expiresAt = new Date(moment().add(5, "hour")).toISOString();
-  console.log(expiresAt)
+  console.log(expiresAt);
 
   forgotPassword(email, token, expiresAt, (err) => {
     if (err) {
@@ -188,7 +196,6 @@ router.post("/forgot_password", async (req, res, next) => {
   });
 });
 
-
 router.delete("/delete_account/:id", async (req, res, next) => {
   const id = req.params.id;
   deleteAccount(id, (err, res) => {
@@ -211,7 +218,6 @@ router.post("/reset_password", async (req, res, next) => {
 
     const hashedPassword = bcrypt.hashSync(newPassword, 12);
 
-    
     await updatePassword(hashedPassword, tokenResult.id);
     await deleteResetToken(tokenResult.id);
     const origin = req.headers.origin;
