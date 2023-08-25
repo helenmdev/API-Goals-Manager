@@ -4,7 +4,7 @@ const cors = require('cors');
 
 router.use(cors());
 
-router.get('/', function(req, res, next) {
+router.get('/goalsmanagerapi', function(req, res, next) {
   res.send('Bienvenido al API de metas');
 });
 

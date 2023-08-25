@@ -16,7 +16,7 @@ const app = express();
 app.use(cors());
 
 const corsOptions = {
-  origin: ['htt://localhost:3001', 'https://goalsmanager.helenmadev.tech'],
+  origin: ['https://localhost:3001', 'https://goalsmanager.helenmadev.tech'],
   methods: 'GET,POST,PUT,DELETE',
   allowedHeaders: 'Content-Type,Authorization',
 };
@@ -29,7 +29,7 @@ app.use(cookieParser("secret"));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
-  "/",
+  "/api",
   jwt({ secret: "secret", algorithms: ["HS256"]}).unless({
     path: [
       "/",
@@ -54,9 +54,11 @@ app.use(async (req, res, next) => {
       req.user = account;
     } catch (err) {
       console.error(err);
+      return res.status(500).json({ error: "Internal server error" });
     }
   }
   next();
 });
+
 
 module.exports = app;
