@@ -31,7 +31,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(
   "/api",
   jwt({ secret: "secret", algorithms: ["HS256"], getToken: function fromCookie (req) {
-    var token = req.cookies.token || req.body.token || req.query.token || req.headers['token'] ;
+    var token = req.cookies.token || req.body.token || req.query.token || req.headers['authorization'] ;
     if (token) {
       return token;
     } s
