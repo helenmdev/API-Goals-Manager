@@ -25,7 +25,7 @@ router.use(cors());
 
 const allowedOrigins = [
   "http://localhost:3001",
-  "https://goalsmanager.helenmadev.tech/",
+  "https://goalsmanager.helenmadev.tech",
 ];
 
 const loginValidationMiddleware = [
