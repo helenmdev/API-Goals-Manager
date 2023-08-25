@@ -160,9 +160,7 @@ router.post("/forgot_password", async (req, res, next) => {
     return res.status(404).send({ error: "No user found with that email" });
   }
   const token = createToken(email);
-  console.log(token);
   const expiresAt = new Date(moment().add(5, "hour")).toISOString();
-  console.log(expiresAt);
 
   forgotPassword(email, token, expiresAt, (err) => {
     if (err) {
