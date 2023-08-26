@@ -14,10 +14,6 @@ const cors = require("cors");
 
 router.use(cors());
 
-const allowedOrigins = [
-  "http://localhost:3001",
-  "https://goalsmanager.helenmadev.tech",
-];
 
 router.get("/", function (req, res, next) {
   try {
@@ -32,13 +28,6 @@ router.get("/", function (req, res, next) {
         }
         return next(err);
       }
-      const origin = req.headers.origin;
-
-      if (allowedOrigins.includes(origin)) {
-        res.header("Access-Control-Allow-Origin", origin);
-      }
-      res.header("Access-Control-Allow-Methods", "GET");
-      res.header("Access-Control-Allow-Headers", "Content-Type");
       res.send(goals);
     });
   } catch (error) {
@@ -56,13 +45,6 @@ router.get("/:id", function (req, res, next) {
     if (!goal.length) {
       return res.sendStatus(404);
     }
-    const origin = req.headers.origin;
-
-      if (allowedOrigins.includes(origin)) {
-        res.header("Access-Control-Allow-Origin", origin);
-      }
-    res.header("Access-Control-Allow-Methods", "GET");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
     res.send(goal[0]);
   });
 });
@@ -93,13 +75,6 @@ router.post(
       if (err) {
         return next(err);
       }
-      const origin = req.headers.origin;
-
-      if (allowedOrigins.includes(origin)) {
-        res.header("Access-Control-Allow-Origin", origin);
-      }
-      res.header("Access-Control-Allow-Methods", "POST");
-      res.header("Access-Control-Allow-Headers", "Content-Type");
       res.send(goal);
     });
   }
@@ -145,12 +120,6 @@ router.put(
           return next(err);
         }
         const origin = req.headers.origin;
-
-      if (allowedOrigins.includes(origin)) {
-        res.header("Access-Control-Allow-Origin", origin);
-      }
-        res.header("Access-Control-Allow-Methods", "PUT");
-        res.header("Access-Control-Allow-Headers", "Content-Type");
         res.send(goal);
       });
     });
@@ -172,13 +141,6 @@ router.delete("/:id", function (req, res, next) {
       if (err) {
         return next(err);
       }
-      const origin = req.headers.origin;
-
-      if (allowedOrigins.includes(origin)) {
-        res.header("Access-Control-Allow-Origin", origin);
-      }
-      res.header("Access-Control-Allow-Methods", "DELETE");
-      res.header("Access-Control-Allow-Headers", "Content-Type");
       res.sendStatus(204);
     });
   });

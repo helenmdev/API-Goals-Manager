@@ -13,15 +13,18 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors());
-
+const whitelist = ["https://goalsmanager.helenmadev.tech"]
 const corsOptions = {
-  origin: ['https://localhost:3001', 'https://goalsmanager.helenmadev.tech'],
-  methods: 'GET,POST,PUT,DELETE',
-  allowedHeaders: 'Content-Type,Authorization',
-};
-
-app.use(cors(corsOptions));
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error("Not allowed by CORS"))
+    }
+  },
+  credentials: true,
+}
+app.use(cors(corsOptions))
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

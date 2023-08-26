@@ -23,11 +23,6 @@ const cors = require("cors");
 
 router.use(cors());
 
-const allowedOrigins = [
-  "http://localhost:3001",
-  "https://goalsmanager.helenmadev.tech",
-];
-
 const loginValidationMiddleware = [
   body("username").notEmpty().isEmail(),
   body("password").notEmpty(),
@@ -66,12 +61,7 @@ router.post(
       } else {
         next(err);
       }
-      const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-      res.header("Access-Control-Allow-Origin", origin);
-    }
-    res.header("Access-Control-Allow-Methods", "POST");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
+   
     }
     
   }
@@ -133,12 +123,6 @@ router.post(
         );
       });
     }
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-      res.header("Access-Control-Allow-Origin", origin);
-    }
-    res.header("Access-Control-Allow-Methods", "POST");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
   }
 );
 
@@ -188,11 +172,6 @@ router.post("/forgot_password", async (req, res, next) => {
     if (error) {
       return console.log("transporter", error);
     }
-    if (allowedOrigins.includes(origin)) {
-      res.header("Access-Control-Allow-Origin", origin);
-    }
-    res.header("Access-Control-Allow-Methods", "POST");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
     return res.status(200).send("Email sent successfully");
   });
 });
@@ -221,13 +200,6 @@ router.post("/reset_password", async (req, res, next) => {
 
     await updatePassword(hashedPassword, tokenResult.id);
     await deleteResetToken(tokenResult.id);
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-      res.header("Access-Control-Allow-Origin", origin);
-    }
-    res.header("Access-Control-Allow-Methods", "POST");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
-
     res.send({ message: "Password reset successful" });
   } catch (error) {
     console.error("An error occurred:", error);
