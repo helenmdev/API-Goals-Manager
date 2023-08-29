@@ -61,9 +61,7 @@ router.post(
       } else {
         next(err);
       }
-   
     }
-    
   }
 );
 
@@ -178,6 +176,12 @@ router.post("/forgot_password", async (req, res, next) => {
 
 router.delete("/delete_account/:id", async (req, res, next) => {
   const id = req.params.id;
+  const token = req.headers.authorization.split(" ")[1];
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: "Token inválido" });
+    }
+  });
   deleteAccount(id, (err, res) => {
     if (err) {
       return next(err);
@@ -207,6 +211,12 @@ router.post("/reset_password", async (req, res, next) => {
   }
 });
 router.post("/resetuserpassword", async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: "Token inválido" });
+    }
+  });
   const { newPassword, id } = req.body;
   console.log(req.body);
   const hashedPassword = bcrypt.hashSync(newPassword, 12);

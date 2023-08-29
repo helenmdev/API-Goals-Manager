@@ -14,12 +14,17 @@ const cors = require("cors");
 
 router.use(cors());
 
-
 router.get("/", function (req, res, next) {
   try {
     const account_id = req.headers["user-id"];
 
     requestAll("goalsorder", account_id, (err, goals) => {
+      const token = req.headers.authorization.split(" ")[1];
+      jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) {
+          return res.status(401).json({ message: "Token inválido" });
+        }
+      });
       if (err) {
         if (err.name === "UnauthorizedError: jwt expired") {
           res.status(401).json({ error: "JWT expired" });
@@ -38,7 +43,19 @@ router.get("/", function (req, res, next) {
 
 router.get("/:id", function (req, res, next) {
   const account_id = req.headers["user-id"];
+  const token = req.headers.authorization.split(" ")[1];
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: "Token inválido" });
+    }
+  });
   requestOne("goalsorder", id, req.auth.id, (err, goal) => {
+    const token = req.headers.authorization.split(" ")[1];
+    jwt.verify(token, secretKey, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: "Token inválido" });
+      }
+    });
     if (err) {
       return next(err);
     }
@@ -64,6 +81,12 @@ router.post(
   body("icon").not().isEmpty(),
 
   function (req, res, next) {
+    const token = req.headers.authorization.split(" ")[1];
+    jwt.verify(token, secretKey, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: "Token inválido" });
+      }
+    });
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -95,6 +118,12 @@ router.put(
   body("icon").not().isEmpty(),
 
   function (req, res, next) {
+    const token = req.headers.authorization.split(" ")[1];
+    jwt.verify(token, secretKey, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: "Token inválido" });
+      }
+    });
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -127,9 +156,21 @@ router.put(
 );
 
 router.delete("/:id", function (req, res, next) {
+  const token = req.headers.authorization.split(" ")[1];
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: "Token inválido" });
+    }
+  });
   const id = req.params.id;
   const account_id = req.headers["user-id"];
   requestOne("goalsorder", id, account_id, (err, goal) => {
+    const token = req.headers.authorization.split(" ")[1];
+    jwt.verify(token, secretKey, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: "Token inválido" });
+      }
+    });
     if (err) {
       return next(err);
     }
@@ -138,6 +179,12 @@ router.delete("/:id", function (req, res, next) {
     }
 
     deleteGoal("goalsorder", id, account_id, (err) => {
+      const token = req.headers.authorization.split(" ")[1];
+      jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) {
+          return res.status(401).json({ message: "Token inválido" });
+        }
+      });
       if (err) {
         return next(err);
       }
