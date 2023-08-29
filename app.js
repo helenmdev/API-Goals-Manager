@@ -35,7 +35,7 @@ app.use(
   '/goalsmanagerapi',
   jwt({ secret: "secret", algorithms: ["HS256"]}).unless({
     path: [
-      "/",
+      "/goalsmanagerapi",
       "/login",              
       "/forgot_password",
       "/reset_password",
