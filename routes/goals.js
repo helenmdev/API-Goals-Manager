@@ -14,26 +14,27 @@ const cors = require("cors");
 
 router.use(cors());
 
+const secretKey = 'secret';
+
 router.get("/", function (req, res, next) {
   try {
     const account_id = req.headers["user-id"];
+    const token = req.headers.authorization.split(" ")[1];
 
-    requestAll("goalsorder", account_id, (err, goals) => {
-      const token = req.headers.authorization.split(" ")[1];
-      jwt.verify(token, secretKey, (err, decoded) => {
-        if (err) {
-          return res.status(401).json({ message: "Token inválido" });
-        }
-      });
+    jwt.verify(token, secretKey, (err, decoded) => {
       if (err) {
-        if (err.name === "UnauthorizedError: jwt expired") {
-          res.status(401).json({ error: "JWT expired" });
-        } else {
-          res.status(500).json({ error: "Internal server error}", err });
+        if (err.name === "TokenExpiredError") {
+          return res.status(401).json({ error: "Expired token" });
         }
-        return next(err);
+        return res.status(401).json({ error: "Invalid token" });
       }
-      res.send(goals);
+
+      requestAll("goalsorder", account_id, (err, goals) => {
+        if (err) {
+          return res.status(500).json({ error: "Internal server error" });
+        }
+        res.send(goals);
+      });
     });
   } catch (error) {
     console.error(error);
@@ -42,28 +43,30 @@ router.get("/", function (req, res, next) {
 });
 
 router.get("/:id", function (req, res, next) {
-  const account_id = req.headers["user-id"];
-  const token = req.headers.authorization.split(" ")[1];
-  jwt.verify(token, secretKey, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: "Token inválido" });
-    }
-  });
-  requestOne("goalsorder", id, req.auth.id, (err, goal) => {
+  try {
+    const account_id = req.headers["user-id"];
     const token = req.headers.authorization.split(" ")[1];
+
     jwt.verify(token, secretKey, (err, decoded) => {
       if (err) {
-        return res.status(401).json({ message: "Token inválido" });
+        return res.status(401).json({ message: "Invalid token" });
       }
+
+      const id = req.params.id;
+      requestOne("goalsorder", id, req.auth.id, (err, goal) => {
+        if (err) {
+          return next(err);
+        }
+        if (!goal.length) {
+          return res.sendStatus(404);
+        }
+        res.send(goal[0]);
+      });
     });
-    if (err) {
-      return next(err);
-    }
-    if (!goal.length) {
-      return res.sendStatus(404);
-    }
-    res.send(goal[0]);
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 router.post(
@@ -81,25 +84,33 @@ router.post(
   body("icon").not().isEmpty(),
 
   function (req, res, next) {
-    const token = req.headers.authorization.split(" ")[1];
-    jwt.verify(token, secretKey, (err, decoded) => {
-      if (err) {
-        return res.status(401).json({ message: "Token inválido" });
-      }
-    });
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    try {
+      const account_id = req.headers["user-id"];
+      const token = req.headers.authorization.split(" ")[1];
+
+      jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) {
+          return res.status(401).json({ message: "Invalid token" });
+        }
+
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
+        const newGoal = req.body;
+        console.log(newGoal);
+        const account_id = req.headers["user-id"];
+        createGoal("goalsorder", newGoal, account_id, (err, goal) => {
+          if (err) {
+            return next(err);
+          }
+          res.send(goal);
+        });
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal server error" });
     }
-    const newGoal = req.body;
-    console.log(newGoal);
-    const account_id = req.headers["user-id"];
-    createGoal("goalsorder", newGoal, account_id, (err, goal) => {
-      if (err) {
-        return next(err);
-      }
-      res.send(goal);
-    });
   }
 );
 
@@ -121,7 +132,7 @@ router.put(
     const token = req.headers.authorization.split(" ")[1];
     jwt.verify(token, secretKey, (err, decoded) => {
       if (err) {
-        return res.status(401).json({ message: "Token inválido" });
+        return res.status(401).json({ message: "Invalid token" });
       }
     });
     const errors = validationResult(req);
@@ -155,42 +166,39 @@ router.put(
   }
 );
 
-router.delete("/:id", function (req, res, next) {
-  const token = req.headers.authorization.split(" ")[1];
-  jwt.verify(token, secretKey, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: "Token inválido" });
-    }
-  });
-  const id = req.params.id;
-  const account_id = req.headers["user-id"];
-  requestOne("goalsorder", id, account_id, (err, goal) => {
-    const token = req.headers.authorization.split(" ")[1];
+router.delete('/:id', function (req, res, next) {
+  try {
+    const account_id = req.headers['user-id'];
+    const token = req.headers.authorization.split(' ')[1];
+
+    // Verificar y decodificar el token
     jwt.verify(token, secretKey, (err, decoded) => {
       if (err) {
-        return res.status(401).json({ message: "Token inválido" });
+        return res.status(401).json({ message: 'Invalid token' });
       }
-    });
-    if (err) {
-      return next(err);
-    }
-    if (!goal.length) {
-      return res.sendStatus(404);
-    }
 
-    deleteGoal("goalsorder", id, account_id, (err) => {
-      const token = req.headers.authorization.split(" ")[1];
-      jwt.verify(token, secretKey, (err, decoded) => {
+      // Si el token es válido, continuar con la lógica de la ruta
+      const id = req.params.id;
+      requestOne('goalsorder', id, account_id, (err, goal) => {
         if (err) {
-          return res.status(401).json({ message: "Token inválido" });
+          return next(err);
         }
+        if (!goal.length) {
+          return res.sendStatus(404);
+        }
+
+        deleteGoal('goalsorder', id, account_id, (err) => {
+          if (err) {
+            return next(err);
+          }
+          res.sendStatus(204);
+        });
       });
-      if (err) {
-        return next(err);
-      }
-      res.sendStatus(204);
     });
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 module.exports = router;

@@ -46,7 +46,6 @@ router.post(
     const validationErrors = validationResult(req);
 
     if (!validationErrors.isEmpty()) {
-      console.log(validationErrors.errors);
       return res.status(400).json({ errors: validationErrors.array() });
     }
     const { username, password } = req.body;
@@ -77,7 +76,7 @@ async function authenticateUser(username, password) {
     }
     const token = jwt.sign(
       {
-        exp: Math.floor(Date.now() / 1000) + 50,
+        expiresIn: Math.floor(Date.now() / 1000) + 50,
         id: account.id,
       },
       "secret"
@@ -127,7 +126,7 @@ router.post(
 function createToken(email, accountid) {
   let token = jwt.sign(
     {
-      exp: Math.floor(Date.now() / 1000) + 50,
+      expiresIn: Math.floor(Date.now() / 1000) + 50,
       username: email,
       id: accountid,
     },
