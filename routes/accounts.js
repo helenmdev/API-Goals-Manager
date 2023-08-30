@@ -37,8 +37,9 @@ router.use(passport.authenticate("jwt", { session: false }));
 
 const corsOptions = {
   origin: "https://goalsmanager.helenmadev.tech",
-  methods: "GET,POST,PUT,DELETE",
-  allowedHeaders: "Content-Type,Authorization",
+  methods: "GET, POST, PUT, DELETE",
+  allowedHeaders: "Content-Type, Authorization",
+  credentials: true, 
 };
 
 router.use(cors(corsOptions));

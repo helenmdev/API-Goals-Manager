@@ -18,10 +18,10 @@ const router = express.Router();
 
 const corsOptions = {
   origin: "https://goalsmanager.helenmadev.tech",
-  methods: "GET,POST,PUT,DELETE",
-  allowedHeaders: "Content-Type,Authorization",
+  methods: "GET, POST, PUT, DELETE",
+  allowedHeaders: "Content-Type, Authorization",
+  credentials: true, 
 };
-
 router.use(cors(corsOptions));
 
 // JWT Strategy Configuration
