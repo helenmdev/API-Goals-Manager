@@ -16,6 +16,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const moment = require("moment");
+const bodyParser = require('body-parser');
 
 const secretKey = 'secret';
 
@@ -42,29 +43,11 @@ passport.use(new JwtStrategy(jwtOptions, (jwtPayload, done) => {
 // Apply passport middleware for JWT authentication
 router.use(passport.authenticate("jwt", { session: false }));
 
-const loginValidationMiddleware = [
-  body("username").notEmpty().isEmail(),
-  body("password").notEmpty(),
-];
-
-const singupValidationMiddleware = [
-  body("username")
-    .notEmpty()
-    .isEmail()
-    .withMessage("Please enter a valid email"),
-  body("password")
-    .notEmpty()
-    .isLength({ min: 6 })
-    .withMessage("Password must have at least 6 characters"),
-];
-
 
 router.post(
   "/login",
-  loginValidationMiddleware,
   async function (req, res, next) {
     const validationErrors = validationResult(req);
-
     if (!validationErrors.isEmpty()) {
       return res.status(400).json({ errors: validationErrors.array() });
     }
@@ -109,7 +92,6 @@ async function authenticateUser(username, password) {
 
 router.post(
   "/signup",
-  singupValidationMiddleware,
   async function (req, res, next) {
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) {
