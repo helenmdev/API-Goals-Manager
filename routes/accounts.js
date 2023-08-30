@@ -12,7 +12,6 @@ const {
   deleteAccount,
   ResetUserPassword,
 } = require("../db/request");
-const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const moment = require("moment");
