@@ -13,7 +13,7 @@ const cors = require("cors");
 
 const app = express();
 
-const whitelist = ["https://goalsmanager.helenmadev.tech"]
+const whitelist = ["https://goalsmanager.helenmadev.tech/"]
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || whitelist.indexOf(origin) !== -1) {
@@ -32,11 +32,10 @@ app.use(cookieParser("secret"));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
-  '/',
+  '/goalsmanagerapi',
   jwt({ secret: "secret", algorithms: ["HS256"]}).unless({
     path: [
       "/goalsmanagerapi",
-      "/",
       "/login",              
       "/forgot_password",
       "/reset_password",
@@ -45,24 +44,15 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  console.log("Request Path:", req.path);
+  console.log("Headers:", req.headers);
+  next();
+});
 
 app.use("/", indexRouter);
 app.use("/goals", goalsRouter);
 app.use("/", accountsRouter);
-
-app.use(async (req, res, next) => {
-  if (req.signedCookies.login) {
-    const { username, password } = req.signedCookies.login;
-    try {
-      const account = await authenticateUser(username, password);
-      req.user = account;
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  }
-  next();
-});
 
 
 module.exports = app;

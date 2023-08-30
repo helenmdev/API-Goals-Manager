@@ -1,27 +1,46 @@
-var express = require("express");
-var bcrypt = require("bcrypt");
+const express = require("express");
+const passport = require("passport");
+const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
+const bcrypt = require("bcrypt");
 const {
   create,
   getAccount,
   forgotPassword,
-  checkUserResult,
-  updatePassword,
   checkTokenResult,
+  updatePassword,
   deleteResetToken,
   deleteAccount,
   ResetUserPassword,
 } = require("../db/request");
-var router = express.Router();
-const { body, validationResult } = require("express-validator");
-var jwt = require("jsonwebtoken");
-var token = jwt.sign({ foo: "bar" }, "shhhhh");
-const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const moment = require("moment");
-const { pool } = require("pg");
-const cors = require("cors");
 
-router.use(cors());
+const secretKey = 'secret';
+
+const router = express.Router();
+
+const corsOptions = {
+  origin: "https://goalsmanager.helenmadev.tech",
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type,Authorization",
+};
+
+router.use(cors(corsOptions));
+
+// JWT Strategy Configuration
+const jwtOptions = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: secretKey,
+};
+
+passport.use(new JwtStrategy(jwtOptions, (jwtPayload, done) => {
+  done(null, jwtPayload);
+}));
+
+// Apply passport middleware for JWT authentication
+router.use(passport.authenticate("jwt", { session: false }));
 
 const loginValidationMiddleware = [
   body("username").notEmpty().isEmail(),
@@ -38,6 +57,7 @@ const singupValidationMiddleware = [
     .isLength({ min: 6 })
     .withMessage("Password must have at least 6 characters"),
 ];
+
 
 router.post(
   "/login",
