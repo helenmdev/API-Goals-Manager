@@ -17,18 +17,11 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const moment = require("moment");
 const bodyParser = require('body-parser');
+const cors = require("cors");
 
 const secretKey = 'secret';
 
 const router = express.Router();
-
-const corsOptions = {
-  origin: "https://goalsmanager.helenmadev.tech",
-  methods: "GET,POST,PUT,DELETE",
-  allowedHeaders: "Content-Type,Authorization",
-};
-
-router.use(cors(corsOptions));
 
 // JWT Strategy Configuration
 const jwtOptions = {
@@ -43,6 +36,13 @@ passport.use(new JwtStrategy(jwtOptions, (jwtPayload, done) => {
 // Apply passport middleware for JWT authentication
 router.use(passport.authenticate("jwt", { session: false }));
 
+const corsOptions = {
+  origin: "https://goalsmanager.helenmadev.tech",
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type,Authorization",
+};
+
+router.use(cors(corsOptions));
 
 router.post(
   "/login",
