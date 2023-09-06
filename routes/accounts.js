@@ -1,54 +1,51 @@
-const express = require("express");
-const passport = require("passport");
-const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
-const bcrypt = require("bcrypt");
+var express = require("express");
+var bcrypt = require("bcrypt");
 const {
   create,
   getAccount,
   forgotPassword,
-  checkTokenResult,
+  checkUserResult,
   updatePassword,
+  checkTokenResult,
   deleteResetToken,
   deleteAccount,
   ResetUserPassword,
 } = require("../db/request");
-const jwt = require("jsonwebtoken");
+var router = express.Router();
+const { body, validationResult } = require("express-validator");
+var jwt = require("jsonwebtoken");
+var token = jwt.sign({ foo: "bar" }, "shhhhh");
+const cookieParser = require("cookie-parser");
 const nodemailer = require("nodemailer");
 const moment = require("moment");
-const bodyParser = require('body-parser');
 const cors = require("cors");
+router.use(cors());
 
-const secretKey = 'secret';
+const secretKey = "secret";
 
-const router = express.Router();
-
-// JWT Strategy Configuration
-const jwtOptions = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: secretKey,
-};
-
-passport.use(new JwtStrategy(jwtOptions, (jwtPayload, done) => {
-  done(null, jwtPayload);
-}));
-
-// Apply passport middleware for JWT authentication
-router.use(passport.authenticate("jwt", { session: false }));
-
-const corsOptions = {
-  origin: "https://goalsmanager.helenmadev.tech",
-  methods: "GET, POST, PUT, DELETE",
-  allowedHeaders: "Content-Type, Authorization",
-  credentials: true, 
-};
-
-router.use(cors(corsOptions));
+const loginValidationMiddleware = [
+  body("username").notEmpty().isEmail(),
+  body("password").notEmpty(),
+];
+const singupValidationMiddleware = [
+  body("username")
+    .notEmpty()
+    .isEmail()
+    .withMessage("Please enter a valid email"),
+  body("password")
+    .notEmpty()
+    .isLength({ min: 6 })
+    .withMessage("Password must have at least 6 characters"),
+];
 
 router.post(
   "/login",
+  loginValidationMiddleware,
   async function (req, res, next) {
     const validationErrors = validationResult(req);
+
     if (!validationErrors.isEmpty()) {
+      console.log(validationErrors.errors);
       return res.status(400).json({ errors: validationErrors.array() });
     }
     const { username, password } = req.body;
@@ -79,7 +76,7 @@ async function authenticateUser(username, password) {
     }
     const token = jwt.sign(
       {
-        expiresIn: Math.floor(Date.now() / 1000) + 50,
+        exp: Math.floor(Date.now() / 1000) + 50,
         id: account.id,
       },
       "secret"
@@ -92,11 +89,11 @@ async function authenticateUser(username, password) {
 
 router.post(
   "/signup",
+  singupValidationMiddleware,
   async function (req, res, next) {
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) {
       const errorMessages = validationErrors.array().map((error) => error.msg);
-
       res.status(400).json({
         success: false,
         message: errorMessages,
@@ -128,7 +125,7 @@ router.post(
 function createToken(email, accountid) {
   let token = jwt.sign(
     {
-      expiresIn: Math.floor(Date.now() / 1000) + 50,
+      exp: Math.floor(Date.now() / 1000) + 50,
       username: email,
       id: accountid,
     },
@@ -138,19 +135,17 @@ function createToken(email, accountid) {
 }
 
 router.post("/forgot_password", async (req, res, next) => {
-  const { email } = req.body;
+  const email = req.body.headers.email;
   if (!email) {
     return res.status(404).send({ error: "No user found with that email" });
   }
   const token = createToken(email);
   const expiresAt = new Date(moment().add(5, "hour")).toISOString();
-
   forgotPassword(email, token, expiresAt, (err) => {
     if (err) {
       return next(err);
     }
   });
-
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -158,14 +153,12 @@ router.post("/forgot_password", async (req, res, next) => {
       pass: "lwegphcqfyusclno",
     },
   });
-
   const mailOptions = {
     from: "Goals Manager",
     to: email,
     subject: "Goals Manager. Reset your password",
-    html: `<p>Click <a href="https://goalsmanager.helenmadev.tech/resetpassword/${token}">here</a> to reset your password.</p>`,
+    html: `<p>Click <a href="http://localhost:3001/resetpassword/${token}">here</a> to reset your password.</p>`,
   };
-
   transporter.sendMail(mailOptions, (error, info) => {
     const origin = req.headers.origin;
     if (error) {
@@ -188,21 +181,24 @@ router.delete("/delete_account/:id", async (req, res, next) => {
       return next(err);
     }
   });
-
   res.send({ message: "Account deleted successfully" });
 });
 
 router.post("/reset_password", async (req, res, next) => {
+  const token = req.body.headers.Authorization.split(" ")[1];
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: "Token inválido" });
+    }
+  });
   try {
-    const { newPassword, token } = req.body;
+    const newPassword = req.body.headers["newpassword"];
 
     const tokenResult = await checkTokenResult(token);
     if (!tokenResult.id) {
       return res.status(400).send({ error: "User not found" });
     }
-
     const hashedPassword = bcrypt.hashSync(newPassword, 12);
-
     await updatePassword(hashedPassword, tokenResult.id);
     await deleteResetToken(tokenResult.id);
     res.send({ message: "Password reset successful" });
@@ -211,24 +207,31 @@ router.post("/reset_password", async (req, res, next) => {
     next(error);
   }
 });
+
 router.post("/resetuserpassword", async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
-  jwt.verify(token, secretKey, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: "Token inválido" });
-    }
-  });
-  const { newPassword, id } = req.body;
-  console.log(req.body);
-  const hashedPassword = bcrypt.hashSync(newPassword, 12);
-
-  ResetUserPassword(hashedPassword, id, function (err) {
-    if (err) {
-      return next(err);
+  try {
+    console.log(req.headers);
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    res.send({ message: "Password successfully changed" });
-  });
+    const token = authHeader.split(" ")[1];
+    const { newpassword, user_id } = req.headers;
+
+    const salt = 12;
+    const hashedPassword = bcrypt.hashSync(newpassword, salt);
+    try {
+      await ResetUserPassword(hashedPassword, user_id);
+      res.send({ message: "Password reset successful" });
+    } catch (error) {
+      console.error("An error occurred:", error);
+      next(error);
+    }
+  } catch (error) {
+    console.error("An error occurred:", error);
+    next(error);
+  }
 });
 
 module.exports = router;

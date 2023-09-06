@@ -124,15 +124,9 @@ function updatePassword(hashedPassword, accountId) {
 function deleteResetToken(accountId) {
   return db.none("UPDATE accounts SET resettoken = NULL WHERE id = $1", [accountId]);
 }
-function ResetUserPassword(hashedPassword, accountId, callback) {
+function ResetUserPassword(hashedPassword, accountId) {
   const updatePass = `UPDATE accounts SET hash = '${hashedPassword}' WHERE id = ${accountId}`;
   db.none(updatePass)
-    .then((result) => {
-      callback(null, result);
-    })
-    .catch((error) => {
-      callback(error);
-    });
 }
 
 module.exports = {
