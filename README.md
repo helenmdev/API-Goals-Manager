@@ -19,10 +19,9 @@ When the following warning appears, press Y and Enter
 
 " Something is already running on port 3000.
 
-Would you like to run the app on another port instead? » (Y/n)
-Open [http://localhost:3001](http://localhost:3001) to view it in your browser."
+Would you like to run the app on another port instead? » (Y/n)"
 
-Now you will be able to run the app from port 3001, the database is already hosted in Render therefor all functionalities are available.
+Now you will be able to run the app from [http://localhost:3001](http://localhost:3001), the database is already hosted in Render therefor all functionalities are available.
 
 ## Author:
 ### Helen Marino:
