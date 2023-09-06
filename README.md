@@ -10,7 +10,7 @@ Download or clone the project, then enter in the project's directory from the te
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-Then Download or clone the following project, [Goals Manager Front]([http://localhost:3000](https://github.com/helenmdev/Goals-Manager)) then enter in the project's directory from the terminal and run the following comands
+Then Download or clone the following project, [Goals Manager Front](https://github.com/helenmdev/Goals-Manager) then enter in the project's directory from the terminal and run the following comands
 
 ### `npm i`
 ### `npm start`
