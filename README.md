@@ -1,6 +1,6 @@
 # Goals Manager APP 
 
-This repository contains the source code for the Goals Manager application, a full-stack project built with React for the front end, Node.js for the back end, and PostgreSQL as the database, responsive and mobile first oriented. The application provides a comprehensive goal management system.
+This repository contains the source code for the Goals Manager application, a full-stack project developed with responsive and mobile first aproach. Built with React for the front end, Node.js for the back end, and PostgreSQL as the database, . The application provides a comprehensive goal management system.
 
 ## Key Features
 
