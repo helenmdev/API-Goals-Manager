@@ -76,7 +76,7 @@ async function authenticateUser(username, password) {
     }
     const token = jwt.sign(
       {
-        exp: Math.floor(Date.now() / 1000) + 50,
+        exp: Math.floor(Date.now() / 1000) + 3600,
         id: account.id,
       },
       "secret"
@@ -125,7 +125,7 @@ router.post(
 function createToken(email, accountid) {
   let token = jwt.sign(
     {
-      exp: Math.floor(Date.now() / 1000) + 50,
+      exp: Math.floor(Date.now() / 1000) + 3600,
       username: email,
       id: accountid,
     },
