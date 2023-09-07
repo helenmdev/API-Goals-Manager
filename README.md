@@ -37,7 +37,7 @@ This project showcases a practical implementation of modern web development tech
 
 ## Built with
 
-* **Front End**
+### Front End
 * HTML
 * Typescript
 * CSS modules
@@ -50,7 +50,7 @@ This project showcases a practical implementation of modern web development tech
 * Math JS
 
 
-* **Backend End**
+### Backend End
 * Technologies
 * NodeJS
 * Express
