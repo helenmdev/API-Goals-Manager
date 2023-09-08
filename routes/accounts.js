@@ -94,9 +94,9 @@ router.post(
     const validationErrors = validationResult(req);
     if (!validationErrors.isEmpty()) {
       const errorMessages = validationErrors.array().map((error) => error.msg);
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
-        message: errorMessages,
+        messages: errorMessages,
       });
     } else {
       bcrypt.hash(req.body.password, 12, function (err, hash) {
@@ -121,6 +121,7 @@ router.post(
     }
   }
 );
+
 
 function createToken(email, accountid) {
   let token = jwt.sign(
